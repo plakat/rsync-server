@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: rsync-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: rsync-server
+  template:
+    metadata:
+      labels:
+        name: rsync-server
+    spec:
+      containers:
+      - image: plakat/rsync-server
+        imagePullPolicy: Always
+        name: rsync-server
+        volumeMounts:
+          - mountPath: /data
+            name: datadir
+          - mountPath: /root/.ssh-ro
+            name: ssh-keys
+            readOnly: true
+      volumes:
+        - name: datadir
+          gcePersistentDisk:
+            pdName: rsync-data
+        - name: ssh-keys
+          secret:
+            secretName: rsync-ssh-secret
+      nodeSelector:
+        node.type: default
